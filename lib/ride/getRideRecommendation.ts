@@ -1,9 +1,16 @@
 import { getWeather } from "../weather/getWeather";
 import { calculateRideRecommendation } from "./calculateRideRecommendation";
-import type { RideRecommendation } from "./types";
+import { RideProfiles } from "./profiles";
+import type {
+  RideDiscipline,
+  RideRecommendation,
+} from "./types";
 
-export async function getRideRecommendation(): Promise<RideRecommendation> {
+export async function getRideRecommendation(
+  discipline: RideDiscipline = "xc",
+): Promise<RideRecommendation> {
   const weather = await getWeather();
+  const profile = RideProfiles[discipline];
 
-  return calculateRideRecommendation(weather);
+  return calculateRideRecommendation(weather, profile);
 }

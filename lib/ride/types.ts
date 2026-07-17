@@ -4,6 +4,33 @@ export type RideRecommendationLevel =
   | "fair"
   | "poor";
 
+export type RideDiscipline =
+  | "road"
+  | "xc"
+  | "trail"
+  | "enduro"
+  | "gravel"
+  | "urban";
+
+export interface RideProfile {
+  discipline: RideDiscipline;
+  displayName: string;
+
+  idealTemperatureMin: number;
+  idealTemperatureMax: number;
+
+  maxWind: number;
+  maxPrecipitationProbability: number;
+  maxHumidity: number;
+  maxUvIndex: number;
+
+  windPenalty: number;
+  rainPenalty: number;
+  temperaturePenalty: number;
+  humidityPenalty: number;
+  uvPenalty: number;
+}
+
 export interface RideMetric {
   label: string;
   value: string;
