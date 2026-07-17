@@ -1,17 +1,21 @@
-export type WeatherMetric = {
-  label: string;
-  value: string;
-};
+export interface WeatherHour {
+  time: string;
+  temperature: number;
+  apparentTemperature: number;
+  precipitationProbability: number;
+  windSpeed: number;
+  windGusts: number;
+  humidity?: number;
+  uvIndex?: number;
+}
 
-export type RideReadiness = {
+export interface WeatherSnapshot {
   location: string;
-  score: number;
-  status: string;
-  title: string;
-  description: string;
-  recommendedWindow: string;
-  metrics: WeatherMetric[];
-  source: string;
+  latitude: number;
+  longitude: number;
+  timezone: string;
+  sunrise: string;
+  sunset?: string;
   updatedAt: string;
-  isFallback: boolean;
-};
+  hours: WeatherHour[];
+}
