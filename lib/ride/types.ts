@@ -12,6 +12,22 @@ export type RideDiscipline =
   | "gravel"
   | "urban";
 
+export type RiderExperienceLevel =
+  | "beginner"
+  | "intermediate"
+  | "advanced";
+
+export type RiderGoal =
+  | "recreation"
+  | "fitness"
+  | "performance"
+  | "exploration";
+
+export interface RiderProfile {
+  experienceLevel: RiderExperienceLevel;
+  goal: RiderGoal;
+}
+
 export interface RideProfile {
   discipline: RideDiscipline;
   displayName: string;

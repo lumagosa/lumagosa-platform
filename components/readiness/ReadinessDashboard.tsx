@@ -8,13 +8,16 @@ import { useRidePreference } from "../shared/providers/RidePreferenceProvider";
 import { MetricsGrid } from "./MetricsGrid";
 import { ReasonsList } from "./ReasonsList";
 import { RideDisciplineSelector } from "./RideDisciplineSelector";
+import { RiderProfileSelector } from "./RiderProfileSelector";
 import { ScoreCard } from "./ScoreCard";
 
 interface ReadinessDashboardProps {
   weather: WeatherSnapshot;
 }
 
-function formatUpdatedAt(updatedAt: string): string {
+function formatUpdatedAt(
+  updatedAt: string,
+): string {
   return new Intl.DateTimeFormat("es-MX", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -42,9 +45,15 @@ export function ReadinessDashboard({
         <RideDisciplineSelector />
       </div>
 
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <RiderProfileSelector />
+      </div>
+
       <ScoreCard recommendation={recommendation} />
 
-      <MetricsGrid recommendation={recommendation} />
+      <MetricsGrid
+        recommendation={recommendation}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ReasonsList
@@ -63,12 +72,15 @@ export function ReadinessDashboard({
 
       <footer className="flex flex-col gap-2 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <p>
-          Fuente meteorológica: {recommendation.source}
+          Fuente meteorológica:{" "}
+          {recommendation.source}
         </p>
 
         <p>
           Actualizado:{" "}
-          {formatUpdatedAt(recommendation.updatedAt)}
+          {formatUpdatedAt(
+            recommendation.updatedAt,
+          )}
         </p>
       </footer>
     </div>
