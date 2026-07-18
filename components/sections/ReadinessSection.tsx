@@ -1,6 +1,6 @@
 import { getWeather } from "../../lib/weather/getWeather";
+import { ReadinessDashboard } from "../readiness/ReadinessDashboard";
 import { SectionHeading } from "../ui/SectionHeading";
-import { ReadinessDashboard } from "./ReadinessDashboard";
 
 export async function ReadinessSection() {
   const weather = await getWeather();

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RidePreferenceProvider } from "../components/providers/RidePreferenceProvider";
+import { RidePreferenceProvider } from "../components/shared/providers/RidePreferenceProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {

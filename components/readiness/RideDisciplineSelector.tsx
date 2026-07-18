@@ -2,9 +2,9 @@
 
 import { RideProfiles } from "../../lib/ride/profiles";
 import type { RideDiscipline } from "../../lib/ride/types";
-import { useRidePreference } from "../providers/RidePreferenceProvider";
+import { useRidePreference } from "../shared/providers/RidePreferenceProvider";
 
-const disciplines: RideDiscipline[] = [
+const disciplines: readonly RideDiscipline[] = [
   "road",
   "xc",
   "trail",
@@ -13,7 +13,10 @@ const disciplines: RideDiscipline[] = [
   "urban",
 ];
 
-const disciplineIcons: Record<RideDiscipline, string> = {
+const disciplineIcons: Record<
+  RideDiscipline,
+  string
+> = {
   road: "🚴",
   xc: "🚵",
   trail: "🌲",
@@ -23,8 +26,10 @@ const disciplineIcons: Record<RideDiscipline, string> = {
 };
 
 export function RideDisciplineSelector() {
-  const { discipline, setDiscipline } =
-    useRidePreference();
+  const {
+    discipline,
+    setDiscipline,
+  } = useRidePreference();
 
   return (
     <fieldset>
@@ -35,14 +40,17 @@ export function RideDisciplineSelector() {
       <div className="mt-3 flex flex-wrap gap-2">
         {disciplines.map((item) => {
           const profile = RideProfiles[item];
-          const isActive = item === discipline;
+          const isActive =
+            item === discipline;
 
           return (
             <button
               key={item}
               type="button"
               aria-pressed={isActive}
-              onClick={() => setDiscipline(item)}
+              onClick={() =>
+                setDiscipline(item)
+              }
               className={[
                 "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2",
@@ -55,7 +63,9 @@ export function RideDisciplineSelector() {
                 {disciplineIcons[item]}
               </span>
 
-              <span>{profile.displayName}</span>
+              <span>
+                {profile.displayName}
+              </span>
             </button>
           );
         })}
