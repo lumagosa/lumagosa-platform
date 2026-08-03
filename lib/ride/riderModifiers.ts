@@ -180,7 +180,9 @@ export function resolveRideProfile(
   riderProfile: RiderProfile,
 ): ResolvedRideProfile {
   const experienceModifier =
-    ExperienceModifiers[riderProfile.experienceLevel];
+    ExperienceModifiers[
+      riderProfile.experienceLevel
+    ];
 
   const goalModifier =
     GoalModifiers[riderProfile.goal];
@@ -202,11 +204,17 @@ export function resolveRideProfile(
     ...rideProfile,
 
     idealTemperatureMin: roundValue(
-      Math.min(adjustedMinimum, adjustedMaximum),
+      Math.min(
+        adjustedMinimum,
+        adjustedMaximum,
+      ),
     ),
 
     idealTemperatureMax: roundValue(
-      Math.max(adjustedMinimum, adjustedMaximum),
+      Math.max(
+        adjustedMinimum,
+        adjustedMaximum,
+      ),
     ),
 
     maxWind: roundValue(
@@ -249,13 +257,19 @@ export function resolveRideProfile(
 
   return {
     profile,
+
     personalizationReasons: [
       getExperienceReason(
         riderProfile.experienceLevel,
       ),
-      getGoalReason(riderProfile.goal),
+      getGoalReason(
+        riderProfile.goal,
+      ),
     ],
+
     personalizationWarnings:
-      getPersonalizationWarnings(riderProfile),
+      getPersonalizationWarnings(
+        riderProfile,
+      ),
   };
 }

@@ -1,14 +1,25 @@
 "use client";
 
-import { useMemo } from "react";
-import { calculateRideRecommendation } from "../../lib/ride/calculateRideRecommendation";
+import {
+  useMemo,
+  useState,
+} from "react";
+import { createRideContext } from "../../lib/ride/createRideContext";
 import { RideProfiles } from "../../lib/ride/profiles";
+import { recommendationEngine } from "../../lib/ride/recommendationEngine";
+import {
+  DefaultRouteProfile,
+  getRouteProfile,
+} from "../../lib/routes/catalog";
 import type { WeatherSnapshot } from "../../lib/weather/types";
 import { useRidePreference } from "../shared/providers/RidePreferenceProvider";
+import { useRiderProfile } from "../shared/providers/RiderProfileProvider";
 import { MetricsGrid } from "./MetricsGrid";
 import { ReasonsList } from "./ReasonsList";
 import { RideDisciplineSelector } from "./RideDisciplineSelector";
 import { RiderProfileSelector } from "./RiderProfileSelector";
+import { RiskAssessmentCard } from "./RiskAssessmentCard";
+import { RouteContextSelector } from "./RouteContextSelector";
 import { ScoreCard } from "./ScoreCard";
 
 interface ReadinessDashboardProps {
@@ -28,16 +39,50 @@ function formatUpdatedAt(
 export function ReadinessDashboard({
   weather,
 }: ReadinessDashboardProps) {
-  const { discipline } = useRidePreference();
+  const { discipline } =
+    useRidePreference();
 
-  const recommendation = useMemo(
-    () =>
-      calculateRideRecommendation(
-        weather,
-        RideProfiles[discipline],
-      ),
-    [discipline, weather],
+  const { profile: riderProfile } =
+    useRiderProfile();
+
+  const [
+    selectedRouteId,
+    setSelectedRouteId,
+  ] = useState(
+    DefaultRouteProfile.id,
   );
+
+  const selectedRoute = useMemo(
+    () =>
+      getRouteProfile(
+        selectedRouteId,
+      ),
+    [selectedRouteId],
+  );
+
+  const recommendation =
+    useMemo(() => {
+      const context =
+        createRideContext({
+          weather,
+          rideProfile:
+            RideProfiles[
+              discipline
+            ],
+          riderProfile,
+          routeProfile:
+            selectedRoute,
+        });
+
+      return recommendationEngine.evaluate(
+        context,
+      );
+    }, [
+      discipline,
+      riderProfile,
+      selectedRoute,
+      weather,
+    ]);
 
   return (
     <div className="mt-10 space-y-6">
@@ -49,22 +94,51 @@ export function ReadinessDashboard({
         <RiderProfileSelector />
       </div>
 
-      <ScoreCard recommendation={recommendation} />
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <RouteContextSelector
+          selectedRouteId={
+            selectedRouteId
+          }
+          onRouteChange={
+            setSelectedRouteId
+          }
+        />
+      </div>
+
+      <ScoreCard
+        recommendation={
+          recommendation
+        }
+      />
+
+      {recommendation.riskAssessment ? (
+        <RiskAssessmentCard
+          assessment={
+            recommendation.riskAssessment
+          }
+        />
+      ) : null}
 
       <MetricsGrid
-        recommendation={recommendation}
+        recommendation={
+          recommendation
+        }
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ReasonsList
           title="¿Por qué esta recomendación?"
-          items={recommendation.reasons}
+          items={
+            recommendation.reasons
+          }
           emptyMessage="No se identificaron ventajas destacables para esta ventana."
         />
 
         <ReasonsList
           title="Advertencias"
-          items={recommendation.warnings}
+          items={
+            recommendation.warnings
+          }
           emptyMessage="No se identificaron advertencias relevantes."
           variant="warning"
         />
@@ -73,7 +147,9 @@ export function ReadinessDashboard({
       <footer className="flex flex-col gap-2 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <p>
           Fuente meteorológica:{" "}
-          {recommendation.source}
+          {
+            recommendation.source
+          }
         </p>
 
         <p>

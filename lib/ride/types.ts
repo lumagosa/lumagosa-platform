@@ -1,3 +1,4 @@
+import type { RouteProfile } from "../routes/types";
 import type { WeatherSnapshot } from "../weather/types";
 
 export type RideRecommendationLevel =
@@ -24,6 +25,12 @@ export type RiderGoal =
   | "fitness"
   | "performance"
   | "exploration";
+
+export type RiskLevel =
+  | "low"
+  | "moderate"
+  | "high"
+  | "critical";
 
 export interface RiderProfile {
   experienceLevel: RiderExperienceLevel;
@@ -53,6 +60,7 @@ export interface RideContext {
   weather: WeatherSnapshot;
   rideProfile: RideProfile;
   riderProfile: RiderProfile;
+  routeProfile?: RouteProfile;
 }
 
 export interface RiderModifierDefinition {
@@ -73,6 +81,15 @@ export interface ResolvedRideProfile {
   personalizationWarnings: string[];
 }
 
+export interface RiskAssessment {
+  score: number;
+  level: RiskLevel;
+  title: string;
+  summary: string;
+  factors: string[];
+  mitigations: string[];
+}
+
 export interface RideMetric {
   label: string;
   value: string;
@@ -90,4 +107,5 @@ export interface RideRecommendation {
   metrics: RideMetric[];
   source: string;
   updatedAt: string;
+  riskAssessment?: RiskAssessment;
 }
