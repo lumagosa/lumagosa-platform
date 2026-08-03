@@ -1,3 +1,5 @@
+import type { WeatherSnapshot } from "../weather/types";
+
 export type RideRecommendationLevel =
   | "excellent"
   | "good"
@@ -45,6 +47,30 @@ export interface RideProfile {
   temperaturePenalty: number;
   humidityPenalty: number;
   uvPenalty: number;
+}
+
+export interface RideContext {
+  weather: WeatherSnapshot;
+  rideProfile: RideProfile;
+  riderProfile: RiderProfile;
+}
+
+export interface RiderModifierDefinition {
+  windToleranceMultiplier: number;
+  rainToleranceMultiplier: number;
+
+  minimumTemperatureAdjustment: number;
+  maximumTemperatureAdjustment: number;
+
+  windPenaltyMultiplier: number;
+  rainPenaltyMultiplier: number;
+  temperaturePenaltyMultiplier: number;
+}
+
+export interface ResolvedRideProfile {
+  profile: RideProfile;
+  personalizationReasons: string[];
+  personalizationWarnings: string[];
 }
 
 export interface RideMetric {
