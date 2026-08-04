@@ -12,6 +12,7 @@ import {
 } from "../../lib/routes/gpxAnalyzer";
 import { createRouteProfileFromGpx } from "../../lib/routes/gpxRouteFactory";
 import type { RouteProfile } from "../../lib/routes/types";
+import { GpxRoutePreview } from "./GpxRoutePreview";
 
 interface GpxImportPanelProps {
   onRouteReady: (
@@ -74,7 +75,7 @@ function GpxAnalysisResult({
     "insufficient";
 
   return (
-    <div className="mt-6 space-y-5">
+    <div className="mt-6 space-y-6">
       <article>
         <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
           Archivo analizado
@@ -155,6 +156,10 @@ function GpxAnalysisResult({
           )}`}
         />
       </div>
+
+      <GpxRoutePreview
+        analysis={analysis}
+      />
 
       <section
         className={[
@@ -317,10 +322,10 @@ export function GpxImportPanel({
         </h3>
 
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Carga un GPX y conviértelo en una ruta
-          temporal para que el motor combine su
-          distancia, desnivel y geometría con el
-          clima y tu perfil ciclista.
+          Carga un GPX para analizar el recorrido,
+          visualizar su geometría y perfil
+          altimétrico, y utilizarlo como una ruta
+          temporal dentro del motor de evaluación.
         </p>
       </div>
 
