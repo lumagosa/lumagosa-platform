@@ -14,6 +14,7 @@ import {
 import type { WeatherSnapshot } from "../../lib/weather/types";
 import { useRidePreference } from "../shared/providers/RidePreferenceProvider";
 import { useRiderProfile } from "../shared/providers/RiderProfileProvider";
+import { GpxImportPanel } from "./GpxImportPanel";
 import { MetricsGrid } from "./MetricsGrid";
 import { ReasonsList } from "./ReasonsList";
 import { RideDisciplineSelector } from "./RideDisciplineSelector";
@@ -103,6 +104,10 @@ export function ReadinessDashboard({
             setSelectedRouteId
           }
         />
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <GpxImportPanel />
       </div>
 
       <ScoreCard
