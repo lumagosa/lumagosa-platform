@@ -9,8 +9,9 @@ import { RideProfiles } from "../../lib/ride/profiles";
 import { recommendationEngine } from "../../lib/ride/recommendationEngine";
 import {
   DefaultRouteProfile,
-  getRouteProfile,
+  RouteCatalog,
 } from "../../lib/routes/catalog";
+import type { RouteProfile } from "../../lib/routes/types";
 import type { WeatherSnapshot } from "../../lib/weather/types";
 import { useRidePreference } from "../shared/providers/RidePreferenceProvider";
 import { useRiderProfile } from "../shared/providers/RiderProfileProvider";
@@ -47,18 +48,40 @@ export function ReadinessDashboard({
     useRiderProfile();
 
   const [
+    importedRoute,
+    setImportedRoute,
+  ] = useState<RouteProfile | null>(
+    null,
+  );
+
+  const [
     selectedRouteId,
     setSelectedRouteId,
   ] = useState(
     DefaultRouteProfile.id,
   );
 
+  const availableRoutes = useMemo(
+    () =>
+      importedRoute
+        ? [
+            importedRoute,
+            ...RouteCatalog,
+          ]
+        : RouteCatalog,
+    [importedRoute],
+  );
+
   const selectedRoute = useMemo(
     () =>
-      getRouteProfile(
-        selectedRouteId,
-      ),
-    [selectedRouteId],
+      availableRoutes.find(
+        (route) =>
+          route.id === selectedRouteId,
+      ) ?? availableRoutes[0],
+    [
+      availableRoutes,
+      selectedRouteId,
+    ],
   );
 
   const recommendation =
@@ -85,6 +108,13 @@ export function ReadinessDashboard({
       weather,
     ]);
 
+  const handleImportedRoute = (
+    route: RouteProfile,
+  ): void => {
+    setImportedRoute(route);
+    setSelectedRouteId(route.id);
+  };
+
   return (
     <div className="mt-10 space-y-6">
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -96,6 +126,14 @@ export function ReadinessDashboard({
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <GpxImportPanel
+          onRouteReady={
+            handleImportedRoute
+          }
+        />
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <RouteContextSelector
           selectedRouteId={
             selectedRouteId
@@ -103,11 +141,10 @@ export function ReadinessDashboard({
           onRouteChange={
             setSelectedRouteId
           }
+          routes={
+            availableRoutes
+          }
         />
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <GpxImportPanel />
       </div>
 
       <ScoreCard

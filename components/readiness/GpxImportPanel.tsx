@@ -10,6 +10,14 @@ import {
   type GpxAnalysis,
   type GpxQualityLevel,
 } from "../../lib/routes/gpxAnalyzer";
+import { createRouteProfileFromGpx } from "../../lib/routes/gpxRouteFactory";
+import type { RouteProfile } from "../../lib/routes/types";
+
+interface GpxImportPanelProps {
+  onRouteReady: (
+    route: RouteProfile,
+  ) => void;
+}
 
 const qualityClasses: Record<
   GpxQualityLevel,
@@ -47,7 +55,7 @@ function AnalysisMetric({
         {label}
       </p>
 
-      <p className="mt-1 text-lg font-bold text-slate-950">
+      <p className="mt-1 break-words text-lg font-bold text-slate-950">
         {value}
       </p>
     </div>
@@ -56,9 +64,15 @@ function AnalysisMetric({
 
 function GpxAnalysisResult({
   analysis,
+  onUseRoute,
 }: {
   analysis: GpxAnalysis;
+  onUseRoute: () => void;
 }) {
+  const canUseRoute =
+    analysis.qualityLevel !==
+    "insufficient";
+
   return (
     <div className="mt-6 space-y-5">
       <article>
@@ -179,16 +193,41 @@ function GpxAnalysisResult({
         ) : (
           <p className="mt-4 text-sm">
             El archivo contiene información
-            suficiente para continuar con la
-            creación de una ficha de ruta.
+            suficiente para construir una ruta
+            temporal.
           </p>
         )}
       </section>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <button
+          type="button"
+          disabled={!canUseRoute}
+          onClick={onUseRoute}
+          className="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-700 px-5 py-2 text-sm font-bold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+        >
+          Usar esta ruta en la evaluación
+        </button>
+
+        {!canUseRoute ? (
+          <p className="text-sm text-red-700">
+            El registro necesita más información
+            antes de utilizarse en el Risk Engine.
+          </p>
+        ) : (
+          <p className="text-sm text-slate-500">
+            Se creará una ruta temporal; no se
+            guardará en el catálogo.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
-export function GpxImportPanel() {
+export function GpxImportPanel({
+  onRouteReady,
+}: GpxImportPanelProps) {
   const inputReference =
     useRef<HTMLInputElement>(null);
 
@@ -243,13 +282,21 @@ export function GpxImportPanel() {
       );
     } finally {
       setIsProcessing(false);
-
-      /*
-       * Permite volver a seleccionar el mismo archivo
-       * después de corregirlo o modificarlo.
-       */
       event.target.value = "";
     }
+  };
+
+  const handleUseRoute = (): void => {
+    if (!analysis) {
+      return;
+    }
+
+    const route =
+      createRouteProfileFromGpx(
+        analysis,
+      );
+
+    onRouteReady(route);
   };
 
   return (
@@ -270,11 +317,10 @@ export function GpxImportPanel() {
         </h3>
 
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Carga un registro GPX para calcular
-          distancia, desnivel, elevación y calidad
-          básica del trazado. El archivo se procesa
-          en tu navegador y todavía no se almacena
-          en ningún servidor.
+          Carga un GPX y conviértelo en una ruta
+          temporal para que el motor combine su
+          distancia, desnivel y geometría con el
+          clima y tu perfil ciclista.
         </p>
       </div>
 
@@ -311,6 +357,9 @@ export function GpxImportPanel() {
       {analysis ? (
         <GpxAnalysisResult
           analysis={analysis}
+          onUseRoute={
+            handleUseRoute
+          }
         />
       ) : null}
     </section>

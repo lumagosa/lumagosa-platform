@@ -17,6 +17,7 @@ import type {
 interface RouteContextSelectorProps {
   selectedRouteId: string;
   onRouteChange: (routeId: string) => void;
+  routes?: readonly RouteProfile[];
 }
 
 const physicalDifficultyLabels: Record<
@@ -66,7 +67,7 @@ const verificationLabels: Record<
   string
 > = {
   draft: "Borrador",
-  "field-review": "En revisión de campo",
+  "field-review": "Registro de campo",
   verified: "Verificada",
   deprecated: "Obsoleta",
 };
@@ -220,12 +221,17 @@ function RouteQualityPanel({
 export function RouteContextSelector({
   selectedRouteId,
   onRouteChange,
+  routes = RouteCatalog,
 }: RouteContextSelectorProps) {
   const selectedRoute =
-    RouteCatalog.find(
+    routes.find(
       (route) =>
         route.id === selectedRouteId,
-    ) ?? RouteCatalog[0];
+    ) ?? routes[0];
+
+  if (!selectedRoute) {
+    return null;
+  }
 
   return (
     <section
@@ -245,19 +251,22 @@ export function RouteContextSelector({
         </h3>
 
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          La recomendación combina las
-          características de la ruta, el clima y
-          el perfil del ciclista. Las fichas
-          piloto todavía requieren validación
-          mediante trazados GPX y revisión de
-          campo.
+          El catálogo puede combinar rutas piloto
+          de LUMAGOSA con recorridos temporales
+          importados mediante GPX.
         </p>
       </div>
 
       <div className="grid gap-3 lg:grid-cols-3">
-        {RouteCatalog.map((route) => {
+        {routes.map((route) => {
           const isSelected =
             route.id === selectedRouteId;
+
+          const isImported =
+            route.sources.some(
+              (source) =>
+                source.type === "gpx",
+            );
 
           return (
             <button
@@ -302,20 +311,35 @@ export function RouteContextSelector({
                 {surfaceLabels[route.surface]}
               </span>
 
-              <span
-                className={[
-                  "mt-3 inline-flex rounded-full px-2 py-1 text-xs font-semibold",
-                  isSelected
-                    ? "bg-white/10 text-slate-200"
-                    : "bg-slate-100 text-slate-600",
-                ].join(" ")}
-              >
-                {
-                  verificationLabels[
-                    route.validation.status
-                  ]
-                }
-              </span>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span
+                  className={[
+                    "inline-flex rounded-full px-2 py-1 text-xs font-semibold",
+                    isSelected
+                      ? "bg-white/10 text-slate-200"
+                      : "bg-slate-100 text-slate-600",
+                  ].join(" ")}
+                >
+                  {
+                    verificationLabels[
+                      route.validation.status
+                    ]
+                  }
+                </span>
+
+                {isImported ? (
+                  <span
+                    className={[
+                      "inline-flex rounded-full px-2 py-1 text-xs font-semibold",
+                      isSelected
+                        ? "bg-emerald-400/20 text-emerald-100"
+                        : "bg-emerald-50 text-emerald-800",
+                    ].join(" ")}
+                  >
+                    GPX importado
+                  </span>
+                ) : null}
+              </div>
             </button>
           );
         })}
