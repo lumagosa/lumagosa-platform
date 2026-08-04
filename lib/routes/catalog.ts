@@ -3,10 +3,11 @@ import type { RouteProfile } from "./types";
 export const RouteCatalog: readonly RouteProfile[] = [
   {
     id: "teotihuacan-valley-loop",
+    slug: "circuito-valle-teotihuacan",
     name: "Circuito Valle de Teotihuacán",
     region: "Valle de Teotihuacán, Estado de México",
     description:
-      "Circuito piloto con caminos rurales, tramos de terracería y vistas del entorno arqueológico.",
+      "Circuito piloto con caminos rurales, tramos de terracería y vistas del entorno del Valle de Teotihuacán.",
 
     distanceKm: 26,
     elevationGainM: 310,
@@ -16,15 +17,40 @@ export const RouteCatalog: readonly RouteProfile[] = [
     technicalDifficulty: "basic",
     surface: "mixed",
     exposureLevel: "moderate",
-    trustLevel: "lumagosa-verified",
+    trustLevel: "partial",
+
+    recommendedDisciplines: [
+      "xc",
+      "gravel",
+      "trail",
+    ],
+
+    safetyFeatures: [],
+
+    sources: [
+      {
+        type: "manual",
+        name: "Catálogo piloto de Proyecto Tepetl",
+      },
+    ],
+
+    validation: {
+      status: "draft",
+      notes: [
+        "Distancia y desnivel requieren confirmación mediante registro GPX.",
+        "El trazado, accesos y condiciones de paso todavía deben revisarse en campo.",
+        "No debe publicarse como ruta definitivamente verificada.",
+      ],
+    },
   },
 
   {
     id: "otumba-trails",
+    slug: "senderos-otumba",
     name: "Senderos de Otumba",
     region: "Otumba, Estado de México",
     description:
-      "Recorrido corto para desarrollar técnica y resistencia sobre caminos de tierra y terreno ondulado.",
+      "Recorrido piloto orientado al desarrollo de técnica y resistencia sobre caminos de tierra y terreno ondulado.",
 
     distanceKm: 18,
     elevationGainM: 240,
@@ -35,14 +61,37 @@ export const RouteCatalog: readonly RouteProfile[] = [
     surface: "dirt",
     exposureLevel: "low",
     trustLevel: "partial",
+
+    recommendedDisciplines: [
+      "xc",
+      "trail",
+    ],
+
+    safetyFeatures: [],
+
+    sources: [
+      {
+        type: "manual",
+        name: "Catálogo piloto de Proyecto Tepetl",
+      },
+    ],
+
+    validation: {
+      status: "draft",
+      notes: [
+        "El nombre representa una zona piloto, no un trazado GPX validado.",
+        "Deben confirmarse propiedad de caminos, accesos y sentido recomendado.",
+      ],
+    },
   },
 
   {
     id: "volcanic-circuit",
+    slug: "circuito-volcanico",
     name: "Circuito Volcánico",
     region: "Valle de Teotihuacán, Estado de México",
     description:
-      "Ruta de mayor exigencia física con ascensos acumulados, terreno rocoso y sectores expuestos.",
+      "Concepto de ruta de mayor exigencia física con ascensos acumulados, terreno rocoso y sectores potencialmente expuestos.",
 
     distanceKm: 34,
     elevationGainM: 720,
@@ -53,6 +102,30 @@ export const RouteCatalog: readonly RouteProfile[] = [
     surface: "rock",
     exposureLevel: "high",
     trustLevel: "partial",
+
+    recommendedDisciplines: [
+      "xc",
+      "trail",
+      "enduro",
+    ],
+
+    safetyFeatures: [],
+
+    sources: [
+      {
+        type: "manual",
+        name: "Catálogo piloto de Proyecto Tepetl",
+      },
+    ],
+
+    validation: {
+      status: "draft",
+      notes: [
+        "La dificultad técnica es una clasificación preliminar.",
+        "Se requiere levantamiento GPX y revisión de sectores expuestos.",
+        "No se han registrado todavía puntos de agua, escapatorias o asistencia.",
+      ],
+    },
   },
 ];
 
