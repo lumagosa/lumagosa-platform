@@ -415,3 +415,279 @@ Si se formalizan pruebas desde otros dispositivos de la LAN, deberá evaluarse e
 LUMAGOSA dispone ahora de una base de desarrollo más reproducible para Debian y de reglas explícitas para reducir inconsistencias entre Windows y Linux.
 
 La migración de estación de trabajo queda separada de los cambios funcionales del producto y documentada dentro del historial técnico del proyecto.
+
+---
+
+## Sprint 016 — Route Library Experience
+
+### Objetivo
+
+Evolucionar la biblioteca personal de rutas introducida en Sprint 014 para integrarla correctamente con el flujo de evaluación de LUMAGOSA y convertirla en una interfaz más informativa para el ciclista.
+
+El sprint aborda dos aspectos:
+
+- separación del estado de las distintas procedencias de ruta;
+- mejora de la experiencia de consulta y gestión de rutas personales.
+
+### Estado previo
+
+La biblioteca personal ya permitía persistir `RouteProfile` mediante `localStorage`.
+
+Sin embargo, al seleccionar una ruta guardada para evaluarla, `ReadinessDashboard` la asignaba también a `importedRoute`.
+
+Esto mezclaba dos conceptos distintos:
+
+- un GPX recién importado y actualmente en edición;
+- una ruta persistida previamente en la biblioteca personal.
+
+Como consecuencia, una ruta guardada podía volver a aparecer conceptualmente como si acabara de ser importada.
+
+### Separación de procedencias
+
+Se reorganizó la composición de rutas disponibles para evaluación.
+
+Conceptualmente:
+
+Catálogo LUMAGOSA
++
+Biblioteca personal
++
+GPX en edición
+=
+availableRoutes
+
+`availableRoutes` se construye utilizando el identificador de cada `RouteProfile` como clave para evitar duplicados.
+
+La selección continúa realizándose mediante:
+
+`selectedRouteId`
+
+y la ruta resultante alimenta posteriormente a `RideContext`.
+
+### Estado de GPX importado
+
+`importedRoute` conserva ahora un significado específico:
+
+representa únicamente el GPX que está siendo preparado o enriquecido en la sesión actual.
+
+Seleccionar una ruta desde la biblioteca personal ya no modifica `importedRoute`.
+
+Esto evita acoplar el concepto de persistencia con el flujo temporal de importación.
+
+### Procedencia en RouteContextSelector
+
+`RouteContextSelector` recibió información explícita para distinguir:
+
+- Catálogo LUMAGOSA;
+- Biblioteca personal;
+- GPX en edición.
+
+La procedencia de una ruta no se deduce únicamente a partir de `source.type`.
+
+Esta decisión es importante porque una ruta almacenada en la biblioteca puede conservar legítimamente una fuente de tipo `gpx` sin ser por ello un GPX temporal en edición.
+
+La clasificación de procedencia corresponde al estado de la aplicación y no al dominio persistente de `RouteProfile`.
+
+### Precedencia de estado
+
+Cuando una misma ruta puede coincidir temporalmente con más de una categoría, se utiliza la siguiente precedencia visual:
+
+GPX en edición
+↓
+Biblioteca personal
+↓
+Catálogo LUMAGOSA
+
+Esto permite representar correctamente una ruta que acaba de ser importada incluso si su identificador ya existe en la biblioteca.
+
+### Biblioteca personal enriquecida
+
+`RouteLibraryPanel` evolucionó desde una lista básica hacia una vista informativa de las rutas guardadas.
+
+Cada tarjeta puede mostrar:
+
+- nombre;
+- región;
+- distancia;
+- desnivel acumulado;
+- dificultad física;
+- dificultad técnica;
+- superficie;
+- exposición;
+- estado de validación;
+- nivel de calidad;
+- puntuación de calidad;
+- observaciones de calidad.
+
+### Reutilización de Route Data Quality
+
+La interfaz no implementa reglas propias para determinar la calidad de una ruta.
+
+En su lugar reutiliza:
+
+`assessRouteDataQuality(route)`
+
+Por tanto:
+
+RouteProfile
+↓
+assessRouteDataQuality
+↓
+RouteLibraryPanel
+
+La responsabilidad de decidir la calidad de los datos continúa perteneciendo al dominio de rutas y no a la capa de presentación.
+
+### Ruta en evaluación
+
+La biblioteca muestra visualmente cuándo una ruta guardada coincide con `selectedRouteId`.
+
+En ese caso se presenta el estado:
+
+`En evaluación`
+
+La acción de seleccionar una ruta desde la biblioteca actualiza el contexto de rodada y provoca que los motores utilicen ese `RouteProfile`.
+
+No se activa el editor de GPX al seleccionar una ruta persistida.
+
+### Protección contra eliminación accidental
+
+La eliminación directa mediante un único clic fue reemplazada por una confirmación dentro de la propia tarjeta.
+
+Flujo:
+
+Eliminar
+↓
+Confirmación
+├── Cancelar
+└── Sí, eliminar
+
+La confirmación utiliza estado local de interfaz y no modifica el contrato de `RouteLibraryProvider`.
+
+Sólo puede existir una solicitud de eliminación activa simultáneamente.
+
+Se evitó depender de `window.confirm()` para mantener la interacción integrada con la interfaz de LUMAGOSA y proporcionar un comportamiento más adecuado para dispositivos móviles.
+
+### Arquitectura resultante
+
+Las rutas disponibles para evaluación quedan conceptualmente organizadas como:
+
+Catálogo LUMAGOSA ──────┐
+                        │
+Biblioteca personal ────┼──→ availableRoutes
+                        │
+GPX en edición ─────────┘
+                               ↓
+                        selectedRouteId
+                               ↓
+                         selectedRoute
+                               ↓
+                          RideContext
+                               ↓
+                    RecommendationEngine
+                         + RiskEngine
+
+La persistencia continúa separada:
+
+RouteProfile
+↓
+RouteLibraryProvider
+↓
+routeLibraryStorage
+↓
+localStorage
+
+### Archivos modificados
+
+- `components/readiness/ReadinessDashboard.tsx`;
+- `components/readiness/RouteContextSelector.tsx`;
+- `components/readiness/RouteLibraryPanel.tsx`;
+- `docs/DEVELOPMENT_LOG.md`.
+
+No fue necesario modificar:
+
+- `RouteProfile`;
+- `RouteLibraryProvider`;
+- `routeLibraryStorage`;
+- `RiskEngine`;
+- `RecommendationEngine`.
+
+### Validaciones técnicas
+
+Durante el sprint se ejecutaron:
+
+`npm run lint`
+
+Resultado:
+
+ESLint terminó sin errores.
+
+`npm run build`
+
+Resultado:
+
+Next.js 16.2.10 completó correctamente el build de producción y la validación TypeScript.
+
+`git diff --check`
+
+Resultado:
+
+no se detectaron errores de whitespace.
+
+### Validaciones funcionales
+
+Se verificó el comportamiento de las tres procedencias de ruta.
+
+Catálogo LUMAGOSA:
+
+las rutas del catálogo permanecen disponibles y se identifican correctamente.
+
+Biblioteca personal:
+
+una ruta persistida puede seleccionarse y evaluarse sin convertirse en un GPX temporal ni activar el editor de importación.
+
+GPX en edición:
+
+una ruta recién importada se selecciona automáticamente, se identifica como GPX en edición y conserva el flujo de enriquecimiento.
+
+También se verificó que:
+
+- seleccionar una ruta de la biblioteca actualiza la ruta en evaluación;
+- RiskEngine utiliza la ruta seleccionada;
+- la tarjeta seleccionada refleja el estado `En evaluación`;
+- las métricas y la calidad de datos se presentan correctamente;
+- cancelar una eliminación conserva la ruta;
+- confirmar una eliminación elimina la ruta de la biblioteca;
+- la acción `Evaluar ruta` continúa funcionando después de incorporar la confirmación de eliminación.
+
+### Commits funcionales
+
+`e40f52a refactor: separate catalog library and imported route state`
+
+Separa el estado del catálogo, biblioteca personal y GPX temporal.
+
+`6af30d2 feat: improve personal route library experience`
+
+Introduce la biblioteca enriquecida y la protección contra eliminación accidental.
+
+### Decisiones y limitaciones
+
+La biblioteca continúa siendo local al navegador.
+
+Todavía no existe:
+
+- autenticación de usuario;
+- sincronización entre dispositivos;
+- almacenamiento remoto;
+- base de datos de rutas del usuario;
+- cartografía real para las rutas guardadas;
+- persistencia completa de la geometría GPX dentro de la biblioteca.
+
+Estas capacidades permanecen fuera del alcance del Sprint 016.
+
+### Resultado
+
+La biblioteca personal deja de funcionar únicamente como almacenamiento de `RouteProfile` y pasa a integrarse explícitamente con el flujo de evaluación de LUMAGOSA.
+
+La plataforma distingue ahora correctamente entre rutas del catálogo, rutas personales persistidas y GPX temporales en edición.
+
+Esto prepara la base para evolucionar posteriormente `Mis rutas` hacia una biblioteca asociada a identidad de usuario, sincronización y cartografía sin acoplar esas capacidades a `RiskEngine`.

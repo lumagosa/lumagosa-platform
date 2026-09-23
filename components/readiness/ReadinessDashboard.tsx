@@ -15,6 +15,7 @@ import type { RouteProfile } from "../../lib/routes/types";
 import type { WeatherSnapshot } from "../../lib/weather/types";
 import { useRidePreference } from "../shared/providers/RidePreferenceProvider";
 import { useRiderProfile } from "../shared/providers/RiderProfileProvider";
+import { useRouteLibrary } from "../shared/providers/RouteLibraryProvider";
 import { GpxImportPanel } from "./GpxImportPanel";
 import { ImportedRouteEditor } from "./ImportedRouteEditor";
 import { MetricsGrid } from "./MetricsGrid";
@@ -55,6 +56,9 @@ export function ReadinessDashboard({
   const { profile: riderProfile } =
     useRiderProfile();
 
+  const { routes: libraryRoutes } =
+    useRouteLibrary();
+
   const [
     importedRoute,
     setImportedRoute,
@@ -70,14 +74,42 @@ export function ReadinessDashboard({
   );
 
   const availableRoutes = useMemo(
-    () =>
-      importedRoute
-        ? [
-            importedRoute,
-            ...RouteCatalog,
-          ]
-        : RouteCatalog,
-    [importedRoute],
+    () => {
+      const routesById =
+        new Map<
+          string,
+          RouteProfile
+        >();
+
+      for (const route of RouteCatalog) {
+        routesById.set(
+          route.id,
+          route,
+        );
+      }
+
+      for (const route of libraryRoutes) {
+        routesById.set(
+          route.id,
+          route,
+        );
+      }
+
+      if (importedRoute) {
+        routesById.set(
+          importedRoute.id,
+          importedRoute,
+        );
+      }
+
+      return Array.from(
+        routesById.values(),
+      );
+    },
+    [
+      importedRoute,
+      libraryRoutes,
+    ],
   );
 
   const selectedRoute = useMemo(
@@ -143,8 +175,6 @@ export function ReadinessDashboard({
   const handleLibraryRoute = (
     route: RouteProfile,
   ): void => {
-    setImportedRoute(route);
-
     setSelectedRouteId(
       route.id,
     );
@@ -152,12 +182,30 @@ export function ReadinessDashboard({
 
   const handleRemoveImportedRoute =
     (): void => {
+      const removedRouteId =
+        importedRoute?.id;
+
       setImportedRoute(null);
 
-      setSelectedRouteId(
-        DefaultRouteProfile.id,
-      );
+      if (
+        removedRouteId &&
+        selectedRouteId ===
+          removedRouteId
+      ) {
+        setSelectedRouteId(
+          DefaultRouteProfile.id,
+        );
+      }
     };
+
+  const libraryRouteIds =
+    useMemo(
+      () =>
+        libraryRoutes.map(
+          (route) => route.id,
+        ),
+      [libraryRoutes],
+    );
 
   return (
     <div className="mt-10 space-y-6">
@@ -214,6 +262,12 @@ export function ReadinessDashboard({
           }
           routes={
             availableRoutes
+          }
+          importedRouteId={
+            importedRoute?.id
+          }
+          libraryRouteIds={
+            libraryRouteIds
           }
         />
       </div>
