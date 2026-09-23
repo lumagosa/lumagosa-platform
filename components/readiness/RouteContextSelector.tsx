@@ -18,7 +18,14 @@ interface RouteContextSelectorProps {
   selectedRouteId: string;
   onRouteChange: (routeId: string) => void;
   routes?: readonly RouteProfile[];
+  importedRouteId?: string;
+  libraryRouteIds?: readonly string[];
 }
+
+type RouteOrigin =
+  | "catalog"
+  | "library"
+  | "imported";
 
 const physicalDifficultyLabels: Record<
   RoutePhysicalDifficulty,
@@ -88,6 +95,34 @@ const qualityClasses: Record<
   verified:
     "border-emerald-200 bg-emerald-50 text-emerald-900",
 };
+
+const routeOriginLabels: Record<
+  RouteOrigin,
+  string
+> = {
+  catalog: "Catálogo LUMAGOSA",
+  library: "Biblioteca personal",
+  imported: "GPX en edición",
+};
+
+function getRouteOrigin(
+  routeId: string,
+  importedRouteId: string | undefined,
+  libraryRouteIds: ReadonlySet<string>,
+): RouteOrigin {
+  if (
+    importedRouteId &&
+    routeId === importedRouteId
+  ) {
+    return "imported";
+  }
+
+  if (libraryRouteIds.has(routeId)) {
+    return "library";
+  }
+
+  return "catalog";
+}
 
 function RouteSummary({
   route,
@@ -222,12 +257,17 @@ export function RouteContextSelector({
   selectedRouteId,
   onRouteChange,
   routes = RouteCatalog,
+  importedRouteId,
+  libraryRouteIds = [],
 }: RouteContextSelectorProps) {
   const selectedRoute =
     routes.find(
       (route) =>
         route.id === selectedRouteId,
     ) ?? routes[0];
+
+  const libraryRouteIdSet =
+    new Set(libraryRouteIds);
 
   if (!selectedRoute) {
     return null;
@@ -251,9 +291,10 @@ export function RouteContextSelector({
         </h3>
 
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          El catálogo puede combinar rutas piloto
-          de LUMAGOSA con recorridos temporales
-          importados mediante GPX.
+          Puedes evaluar rutas del catálogo
+          LUMAGOSA, rutas de tu biblioteca
+          personal o el GPX que estés
+          preparando actualmente.
         </p>
       </div>
 
@@ -262,10 +303,11 @@ export function RouteContextSelector({
           const isSelected =
             route.id === selectedRouteId;
 
-          const isImported =
-            route.sources.some(
-              (source) =>
-                source.type === "gpx",
+          const origin =
+            getRouteOrigin(
+              route.id,
+              importedRouteId,
+              libraryRouteIdSet,
             );
 
           return (
@@ -327,18 +369,22 @@ export function RouteContextSelector({
                   }
                 </span>
 
-                {isImported ? (
-                  <span
-                    className={[
-                      "inline-flex rounded-full px-2 py-1 text-xs font-semibold",
-                      isSelected
-                        ? "bg-emerald-400/20 text-emerald-100"
+                <span
+                  className={[
+                    "inline-flex rounded-full px-2 py-1 text-xs font-semibold",
+                    isSelected
+                      ? "bg-emerald-400/20 text-emerald-100"
+                      : origin === "catalog"
+                        ? "bg-slate-100 text-slate-700"
                         : "bg-emerald-50 text-emerald-800",
-                    ].join(" ")}
-                  >
-                    GPX importado
-                  </span>
-                ) : null}
+                  ].join(" ")}
+                >
+                  {
+                    routeOriginLabels[
+                      origin
+                    ]
+                  }
+                </span>
               </div>
             </button>
           );
