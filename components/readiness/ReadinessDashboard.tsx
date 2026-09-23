@@ -16,12 +16,14 @@ import type { WeatherSnapshot } from "../../lib/weather/types";
 import { useRidePreference } from "../shared/providers/RidePreferenceProvider";
 import { useRiderProfile } from "../shared/providers/RiderProfileProvider";
 import { GpxImportPanel } from "./GpxImportPanel";
+import { ImportedRouteEditor } from "./ImportedRouteEditor";
 import { MetricsGrid } from "./MetricsGrid";
 import { ReasonsList } from "./ReasonsList";
 import { RideDisciplineSelector } from "./RideDisciplineSelector";
 import { RiderProfileSelector } from "./RiderProfileSelector";
 import { RiskAssessmentCard } from "./RiskAssessmentCard";
 import { RouteContextSelector } from "./RouteContextSelector";
+import { RouteLibraryPanel } from "./RouteLibraryPanel";
 import { ScoreCard } from "./ScoreCard";
 
 interface ReadinessDashboardProps {
@@ -31,11 +33,17 @@ interface ReadinessDashboardProps {
 function formatUpdatedAt(
   updatedAt: string,
 ): string {
-  return new Intl.DateTimeFormat("es-MX", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "America/Mexico_City",
-  }).format(new Date(updatedAt));
+  return new Intl.DateTimeFormat(
+    "es-MX",
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone:
+        "America/Mexico_City",
+    },
+  ).format(
+    new Date(updatedAt),
+  );
 }
 
 export function ReadinessDashboard({
@@ -76,7 +84,8 @@ export function ReadinessDashboard({
     () =>
       availableRoutes.find(
         (route) =>
-          route.id === selectedRouteId,
+          route.id ===
+          selectedRouteId,
       ) ?? availableRoutes[0],
     [
       availableRoutes,
@@ -89,11 +98,14 @@ export function ReadinessDashboard({
       const context =
         createRideContext({
           weather,
+
           rideProfile:
             RideProfiles[
               discipline
             ],
+
           riderProfile,
+
           routeProfile:
             selectedRoute,
         });
@@ -112,8 +124,40 @@ export function ReadinessDashboard({
     route: RouteProfile,
   ): void => {
     setImportedRoute(route);
-    setSelectedRouteId(route.id);
+
+    setSelectedRouteId(
+      route.id,
+    );
   };
+
+  const handleImportedRouteChange = (
+    route: RouteProfile,
+  ): void => {
+    setImportedRoute(route);
+
+    setSelectedRouteId(
+      route.id,
+    );
+  };
+
+  const handleLibraryRoute = (
+    route: RouteProfile,
+  ): void => {
+    setImportedRoute(route);
+
+    setSelectedRouteId(
+      route.id,
+    );
+  };
+
+  const handleRemoveImportedRoute =
+    (): void => {
+      setImportedRoute(null);
+
+      setSelectedRouteId(
+        DefaultRouteProfile.id,
+      );
+    };
 
   return (
     <div className="mt-10 space-y-6">
@@ -129,6 +173,33 @@ export function ReadinessDashboard({
         <GpxImportPanel
           onRouteReady={
             handleImportedRoute
+          }
+        />
+      </div>
+
+      {importedRoute ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 shadow-sm">
+          <ImportedRouteEditor
+            route={
+              importedRoute
+            }
+            onRouteChange={
+              handleImportedRouteChange
+            }
+            onRemove={
+              handleRemoveImportedRoute
+            }
+          />
+        </div>
+      ) : null}
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <RouteLibraryPanel
+          selectedRouteId={
+            selectedRouteId
+          }
+          onSelectRoute={
+            handleLibraryRoute
           }
         />
       </div>
